@@ -7,7 +7,7 @@ import streamlit as st
 
 DB_FILE = "app.db"
 SOURCES = {"ingredients": "ingredients_results.csv"}
-#SUMMARY_FILE = "ingredients_summary.json"  # written by ingredients_scraper.py (full-run totals)
+SUMMARY_FILE = "ingredients_summary.json"  # written by ingredients_scraper.py (full-run totals)
 
 st.set_page_config(page_title="Scraping Challenge Explorer", layout="wide")
 
