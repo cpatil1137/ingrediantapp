@@ -7,7 +7,11 @@ import streamlit as st
 
 DB_FILE = "app.db"
 SOURCES = {"ingredients": "ingredients_results.csv"}
-SUMMARY_FILE = "ingredients_summary.json"  # written by ingredients_scraper.py (full-run totals)
+SUMMARY_FILE = "ingredients_summary.json"  # optional: full-site totals from make_summary.py
+SAMPLE_LIMIT = 1000
+DISCLAIMER = (f"**Disclaimer:** this table contains only the first {SAMPLE_LIMIT:,} product records. "
+              "The full extraction takes a very long time, so a sample was collected to keep "
+              "the process within the available time. The scraper itself is built to collect every record.")
 
 st.set_page_config(page_title="Scraping Challenge Explorer", layout="wide")
 
@@ -35,24 +39,24 @@ def ingredients_tab():
         st.info("ingredients_results.csv not found.")
         return
 
+    st.info(DISCLAIMER)
+
     if os.path.exists(SUMMARY_FILE):
         with open(SUMMARY_FILE, encoding="utf-8") as f:
             s = json.load(f)
         cols = st.columns(5)
-        cols[0].metric("Total ingredients", f"{s['total_ingredients']:,}")
-        cols[1].metric("Total finished products", f"{s['total_finished_products']:,}")
+        cols[0].metric("Total ingredients (whole site)", f"{s['total_ingredients']:,}")
+        cols[1].metric("Total finished products (whole site)", f"{s['total_finished_products']:,}")
         cols[2].metric("Companies: Herbs, Spices", f"{s['companies_herbs_spices']:,}")
         cols[3].metric("Companies: Physical Formats", f"{s['companies_physical_formats']:,}")
         cols[4].metric("Companies: Cognitive & Mental Health", f"{s['companies_cognitive_mental_health']:,}")
-        st.caption(f"Totals come from the complete category listings. "
-                   f"The table below shows {len(df):,} scraped product records.")
+        st.caption(f"Metrics above are full-site totals from the category listings. "
+                   f"The table below shows only the {len(df):,} sampled product records.")
     else:
-        # Fallback: only counts what is in the CSV, so label it clearly.
-        st.warning(f"{SUMMARY_FILE} not found - showing counts from the {len(df):,} rows in the CSV only.")
         cols = st.columns(3)
-        cols[0].metric("Ingredient records", int(df["Record Type"].str.contains("Ingredient").sum()))
-        cols[1].metric("Finished product records", int(df["Record Type"].str.contains("Finished").sum()))
-        cols[2].metric("Unique companies", df["Company ID"].nunique())
+        cols[0].metric("Ingredient records (sample)", int(df["Record Type"].str.contains("Ingredient").sum()))
+        cols[1].metric("Finished product records (sample)", int(df["Record Type"].str.contains("Finished").sum()))
+        cols[2].metric("Unique companies (sample)", df["Company ID"].nunique())
 
     f1, f2, f3 = st.columns(3)
     kinds = f1.multiselect("Record type", sorted(df["Record Type"].unique()))
